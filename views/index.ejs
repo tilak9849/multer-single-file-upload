@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>File Upload System</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        form,
+        ul {
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 5px 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-link {
+            text-decoration: none;
+            color: blue;
+        }
+
+        button {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Upload a File</h1>
+
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Uploaded Files</h2>
+    <ul id="fileList"></ul>
+
+    <script>
+        async function fetchFiles() {
+            const res = await fetch('/view');
+            const data = await res.json();
+            const list = document.getElementById('fileList');
+            list.innerHTML = '';
+
+            data.files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+
+                const link = document.createElement('a');
+                link.href = `/uploads/${file}`;
+                link.target = '_blank';
+                link.className = 'file-link';
+                link.innerText = file;
+
+                const btn = document.createElement('button');
+                btn.innerText = 'Delete';
+                btn.onclick = async () => {
+                    const confirmDelete = confirm(`Are you sure you want to delete ${file}?`);
+                    if (confirmDelete) {
+                        const res = await fetch(`/delete/${file}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            alert('File deleted!');
+                            fetchFiles();
+                        } else {
+                            alert('Failed to delete file.');
+                        }
+                    }
+                };
+
+                li.appendChild(link);
+                li.appendChild(btn);
+                list.appendChild(li);
+            });
+        }
+
+        // Initial load
+        fetchFiles();
+    </script>
+
+</body>
+
+</html>
